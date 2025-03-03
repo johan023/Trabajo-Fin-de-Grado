@@ -163,3 +163,37 @@ OK
 zone 1.168.192.in-addr.arpa/IN: loaded serial 2024030201
 OK
 ```
+
+## 💻 **Paso 6: Configurar el PC de sobremesa para usar el DNS**
+
+En Windows:
+
+1. Abre **Configuración > Red e Internet > Cambiar opciones del adaptador**.
+2. Haz clic derecho en tu conexión de red > **Propiedades**.
+3. Selecciona **Protocolo de Internet versión 4 (TCP/IPv4)** y haz clic en **Propiedades**.
+4. Configura:
+    - **Dirección IP**: `192.168.1.50`
+    - **Máscara de subred**: `255.255.255.0`
+    - **Puerta de enlace**: `192.168.1.1`
+    - **Servidor DNS preferido**: `192.168.1.137`
+5. Guarda los cambios.
+
+También puedes acceder a esta configuración a través del **Panel de control**:
+
+**Panel de control → Redes e Internet → Conexiones (estado de WiFi) → Propiedades → Protocolo de Internet IPv4 → Propiedades**
+
+
+## 🛠️ **Paso 7: Probar la Configuración**  
+
+En el **PC de sobremesa**, prueba si puede resolver nombres con:
+
+```powershell
+nslookup pc.joanamoros23.local 192.168.1.137
+```
+
+O en Linux, usa dig:
+```powershell
+dig @192.168.1.137 pc.joanamoros23.local
+```
+
+✅ Si devuelve la IP configurada, el servidor DNS está funcionando correctamente. 🎉
