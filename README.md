@@ -71,6 +71,7 @@ zone "joanamoros23.local" {
 ```
 
 10. Guarda y cierra el archivo (`Ctrl + X`, luego `Y` y `Enter`).
+    
 11. Crea el archivo de la zona:
 
 ```bash
@@ -78,4 +79,87 @@ sudo cp /etc/bind/db.empty /etc/bind/db.joanamoros23.local
 sudo nano /etc/bind/db.joanamoros23.local
 ```
 
+12. Edita el archivo y ajústalo con tu configuración:
+```bash
+$TTL    86400
+@       IN      SOA     joanamoros23.local. admin.joanamoros23.local. (
+                        2024030201   ; Serial
+                        3600         ; Refresh
+                        1800         ; Retry
+                        604800       ; Expire
+                        86400 )      ; Minimum TTL
 
+        IN      NS      ns.joanamoros23.local.
+ns      IN      A       192.168.1.137  ; IP del servidor DNS
+pc      IN      A       192.168.1.50   ; IP del PC de sobremesa
+```
+
+13. Guarda y cierra el archivo (Ctrl + X, luego Y y Enter).
+
+
+## 🔄 **Paso 4: Configurar Resolución Inversa (Opcional)**
+>⚠️ **ADVERTENCIA**: La resolución inversa permite traducir IPs a nombres de dominio. No es obligatoria, pero puede ser útil.
+
+14. Si quieres configurar resolución inversa (IP a nombre de dominio), edita `/etc/bind/named.conf.local`:
+```bash
+sudo nano /etc/bind/named.conf.local
+```
+
+15. Añade:
+```bash
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.192";
+};
+```
+
+16. Guarda y cierra el archivo (`Ctrl + X`, luego `Y` y `Enter`).
+
+17. Crea el archivo de la zona: 
+```bash
+sudo cp /etc/bind/db.empty /etc/bind/db.192
+sudo nano /etc/bind/db.192
+```
+
+18. Añade esta configuración:
+```bash
+$TTL    86400
+@       IN      SOA     joanamoros23.local. admin.joanamoros23.local. (
+                        2024030201   ; Serial
+                        3600         ; Refresh
+                        1800         ; Retry
+                        604800       ; Expire
+                        86400 )      ; Minimum TTL
+
+        IN      NS      ns.joanamoros23.local.
+100     IN      PTR     ns.joanamoros23.local.
+50      IN      PTR     pc.joanamoros23.local.
+```
+
+19. Guarda y cierra el archivo (`Ctrl + X`, luego `Y` y `Enter`).
+
+
+## 🔄 **Paso 5: Reiniciar BIND9 y Verificar**
+
+20. Aplica los cambios:
+```bash
+sudo systemctl restart bind9
+sudo systemctl status bind9
+```
+
+21. Verifica la configuración con:
+```bash
+sudo named-checkconf
+sudo named-checkzone joanamoros23.local /etc/bind/db.joanamoros23.local
+sudo named-checkzone 1.168.192.in-addr.arpa /etc/bind/db.192
+```
+
+22. Si todo está bien, deberíamos ver:
+```bash
+zone joanamoros23.local/IN: loaded serial 2024030201
+OK
+```
+```bash
+zone 1.168.192.in-addr.arpa/IN: loaded serial 2024030201
+OK
+```
