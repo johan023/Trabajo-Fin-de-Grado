@@ -182,6 +182,25 @@ También puedes acceder a esta configuración a través del **Panel de control**
 
 **Panel de control → Redes e Internet → Conexiones (estado de WiFi) → Propiedades → Protocolo de Internet IPv4 → Propiedades**
 
+<p align="center">
+  <img src="img/menu.png" alt="Menú">
+</p>
+<p align="center">
+  <img src="img/panel_control.png" alt="Panel de control">
+</p>
+<p align="center">
+  <img src="img/redes_internet.png" alt="Redes e Internet">
+</p>
+<p align="center">
+  <img src="img/estado_wifi.png" alt="Estado de WiFi">
+</p>
+<p align="center">
+  <img src="img/propiedades.png" alt="Propiedades">
+</p>
+<p align="center">
+  <img src="img/propiedades_ipv4.png" alt="Propiedades IPv4">
+</p>
+
 
 ## 🛠️ **Paso 7: Probar la Configuración**  
 
@@ -196,4 +215,4 @@ O en Linux, usa dig:
 dig @192.168.1.137 pc.joanamoros23.local
 ```
 
-✅ Si devuelve la IP configurada, el servidor DNS está funcionando correctamente. 🎉
+✅ Si devuelve la IP configurada, el servidor DNS está funcionando correctamente. 
