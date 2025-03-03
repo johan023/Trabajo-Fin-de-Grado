@@ -30,7 +30,7 @@ sudo systemctl enable bind9
 
 
 
-## ⚙️ **Paso 2: Configurar BIND9 como Servidor DNS**
+## ⚙️ **Paso 2: Configurar BIND9 como servidor DNS**
 
 5. Edita el archivo de configuración principal:
 ```bash
@@ -53,7 +53,7 @@ options {
 
 7. Guarda y cierra el archivo (Ctrl + X, luego Y y Enter).
 
-## 🌍 **Paso 3: Configurar una Zona DNS**
+## 🌍 **Paso 3: Configurar una zona DNS**
 >⚠️ **IMPORTANTE**: Usa un dominio que no entre en conflicto con dominios públicos. Se recomienda .local para redes privadas.
 
 8. Edita el archivo de zonas:
@@ -97,7 +97,7 @@ pc      IN      A       192.168.1.50   ; IP del PC de sobremesa
 13. Guarda y cierra el archivo (Ctrl + X, luego Y y Enter).
 
 
-## 🔄 **Paso 4: Configurar Resolución Inversa (Opcional)**
+## 🔄 **Paso 4: Configurar resolución inversa (opcional)**
 >⚠️ **ADVERTENCIA**: La resolución inversa permite traducir IPs a nombres de dominio. No es obligatoria, pero puede ser útil.
 
 14. Si quieres configurar resolución inversa (IP a nombre de dominio), edita `/etc/bind/named.conf.local`:
@@ -139,7 +139,7 @@ $TTL    86400
 19. Guarda y cierra el archivo (`Ctrl + X`, luego `Y` y `Enter`).
 
 
-## 🔄 **Paso 5: Reiniciar BIND9 y Verificar**
+## 🔄 **Paso 5: Reiniciar BIND9 y verificar**
 
 20. Aplica los cambios:
 ```bash
@@ -216,3 +216,86 @@ dig @192.168.1.137 pc.joanamoros23.local
 ```
 
 ✅ Si devuelve la IP configurada, el servidor DNS está funcionando correctamente. 
+
+
+---
+
+## ⚠️ **Posibles problemas y soluciones**
+
+### 🛠 **1. Verificar la configuración de red de la máquina virtual**
+Si el PC de sobremesa no puede resolver nombres, verifica la configuración de red de tu máquina virtual.
+
+**📌 Solución:**
+
+Asegúrate de que la máquina virtual está en modo puente o en la misma red que el PC de sobremesa.
+En VirtualBox:
+Ve a **Configuración > Red.**
+Asegúrate de que la interfaz de red está en **"Adaptador puente"**.
+Guarda los cambios y reinicia la máquina virtual.
+<p align="center">
+  <img src="img/ajustes_red.png" width="700px" alt="Ajustes de red">
+</p>
+
+
+### 🔍 **2. Comprobar la IP de la máquina virtual**
+Ejecuta en la máquina virtual:
+
+```bash
+ip a | grep inet
+```
+
+Ejemplo de salida esperada:
+```bash
+inet 127.0.0.1/8 scope host lo  
+inet6 ::1/128 scope host noprefixroute  
+inet 192.168.1.137/24 brd 192.168.1.255 scope global dynamic noprefixroute enp0s3  
+```
+
+**📌 Solución:**
+- La dirección 192.168.1.137 debe estar en la misma subred que el PC de sobremesa.
+- Si no tienes una IP en este rango, cambia la configuración de red en VirtualBox.
+
+
+### **🌍 3. Verificar la resolución de nombres en el PC de sobremesa**
+Ejecuta:
+```bash
+nslookup pc.joanamoros23.local 192.168.1.137
+```
+
+Si devuelve algo como esto, el DNS funciona correctamente:
+```bash
+Servidor:  UnKnown  
+Address:  192.168.1.137  
+
+Nombre:  pc.joanamoros23.local  
+Address:  192.168.1.50  
+```
+
+📌 Notas:
+- **"Servidor: UnKnown"** es normal, significa que BIND9 no tiene un nombre configurado.
+- **"Address: 192.168.1.137"** es correcto, es la IP de la máquina virtual con el DNS.
+- **"Nombre: pc.joanamoros23.local → 192.168.1.50"** significa que la zona DNS está bien configurada.
+
+
+### **🔁 4. Asegurar que Windows Usa el DNS correctamente**
+Para verificar que Windows usa el DNS, ejecuta:
+```bash
+nslookup google.com 192.168.1.137
+```
+
+Ejemplo de salida esperada: 
+```bash
+Servidor:  UnKnown  
+Address:  192.168.1.137  
+
+Respuesta no autoritativa:  
+Nombre:  google.com  
+Addresses:  2a00:1450:4003:80d::200e  
+          142.250.184.174  
+```
+
+- **"Respuesta no autoritativa"** indica que el servidor está reenviando consultas a otros DNS (Google, Cloudflare).
+
+
+
+
