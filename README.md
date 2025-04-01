@@ -61,12 +61,12 @@ options {
 sudo nano /etc/bind/named.conf.local
 ```
 
-9. Añade la configuración para una zona DNS, por ejemplo, **joanamoros23.local**:
+9. Añade la configuración para una zona DNS, por ejemplo, **joanamoros23.home**:
 
 ```bash
-zone "joanamoros23.local" {
+zone "joanamoros23.home" {
     type master;
-    file "/etc/bind/db.joanamoros23.local";
+    file "/etc/bind/db.joanamoros23.home";
 };
 ```
 
@@ -75,23 +75,26 @@ zone "joanamoros23.local" {
 11. Crea el archivo de la zona:
 
 ```bash
-sudo cp /etc/bind/db.empty /etc/bind/db.joanamoros23.local
-sudo nano /etc/bind/db.joanamoros23.local
+sudo cp /etc/bind/db.empty /etc/bind/db.joanamoros23.home
+sudo nano /etc/bind/db.joanamoros23.home
 ```
 
 12. Edita el archivo y ajústalo con tu configuración:
 ```bash
 $TTL    86400
-@       IN      SOA     joanamoros23.local. admin.joanamoros23.local. (
-                        2024030201   ; Serial
-                        3600         ; Refresh
-                        1800         ; Retry
-                        604800       ; Expire
-                        86400 )      ; Minimum TTL
+@       IN      SOA     joanamoros23.home. root.joanamoros23.home. (
+                              3         ; Serial (incrementa en cada cambio)
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                          86400 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.joanamoros23.home.
 
-        IN      NS      ns.joanamoros23.local.
-ns      IN      A       192.168.1.137  ; IP del servidor DNS
-pc      IN      A       192.168.1.50   ; IP del PC de sobremesa
+ns      IN      A       192.168.1.137   ; Dirección del servidor DNS (BIND)
+@       IN      A       192.168.1.137   ; Dirección del dominio principal
+
+pc      IN      A       192.168.1.50    ; Dirección del PC de sobremesa
 ```
 
 13. Guarda y cierra el archivo (Ctrl + X, luego Y y Enter).
@@ -124,16 +127,18 @@ sudo nano /etc/bind/db.192
 18. Añade esta configuración:
 ```bash
 $TTL    86400
-@       IN      SOA     joanamoros23.local. admin.joanamoros23.local. (
-                        2024030201   ; Serial
-                        3600         ; Refresh
-                        1800         ; Retry
-                        604800       ; Expire
-                        86400 )      ; Minimum TTL
+@       IN      SOA     joanamoros23.home. root.joanamoros23.home. (
+                              2         ; Serial (incrementa este número en cada cambio)
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                          86400 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.joanamoros23.home.
 
-        IN      NS      ns.joanamoros23.local.
-100     IN      PTR     ns.joanamoros23.local.
-50      IN      PTR     pc.joanamoros23.local.
+137     IN      PTR     joanamoros23.home.   ; Resolución inversa del servidor DNS
+50      IN      PTR     pc.joanamoros23.home.  ; Resolución inversa del PC de sobremesa
+
 ```
 
 19. Guarda y cierra el archivo (`Ctrl + X`, luego `Y` y `Enter`).
@@ -150,17 +155,17 @@ sudo systemctl status bind9
 21. Verifica la configuración con:
 ```bash
 sudo named-checkconf
-sudo named-checkzone joanamoros23.local /etc/bind/db.joanamoros23.local
+sudo named-checkzone joanamoros23.home /etc/bind/db.joanamoros23.home
 sudo named-checkzone 1.168.192.in-addr.arpa /etc/bind/db.192
 ```
 
 22. Si todo está bien, deberíamos ver:
 ```bash
-zone joanamoros23.local/IN: loaded serial 2024030201
+zone joanamoros23.home/IN: loaded serial 3
 OK
 ```
 ```bash
-zone 1.168.192.in-addr.arpa/IN: loaded serial 2024030201
+zone 1.168.192.in-addr.arpa/IN: loaded serial 2
 OK
 ```
 
@@ -207,12 +212,12 @@ También puedes acceder a esta configuración a través del **Panel de control**
 En el **PC de sobremesa**, prueba si puede resolver nombres con:
 
 ```powershell
-nslookup pc.joanamoros23.local 192.168.1.137
+nslookup pc.joanamoros23.home 192.168.1.137
 ```
 
 O en Linux, usa dig:
 ```powershell
-dig @192.168.1.137 pc.joanamoros23.local
+dig @192.168.1.137 pc.joanamoros23.home
 ```
 
 ✅ Si devuelve la IP configurada, el servidor DNS está funcionando correctamente. 
@@ -259,23 +264,17 @@ inet 192.168.1.137/24 brd 192.168.1.255 scope global dynamic noprefixroute enp0s
 ### **🌍 3. Verificar la resolución de nombres en el PC de sobremesa**
 Ejecuta:
 ```bash
-nslookup pc.joanamoros23.local 192.168.1.137
+nslookup pc.joanamoros23.home 192.168.1.137
 ```
 
 Si devuelve algo como esto, el DNS funciona correctamente:
 ```bash
-Servidor:  UnKnown  
+Servidor:  joanamoros23.home  
 Address:  192.168.1.137  
 
-Nombre:  pc.joanamoros23.local  
+Nombre:  pc.joanamoros23.home  
 Address:  192.168.1.50  
 ```
-
-📌 Notas:
-- **"Servidor: UnKnown"** es normal, significa que BIND9 no tiene un nombre configurado.
-- **"Address: 192.168.1.137"** es correcto, es la IP de la máquina virtual con el DNS.
-- **"Nombre: pc.joanamoros23.local → 192.168.1.50"** significa que la zona DNS está bien configurada.
-
 
 ### **🔁 4. Asegurar que Windows Usa el DNS correctamente**
 Para verificar que Windows usa el DNS, ejecuta:
